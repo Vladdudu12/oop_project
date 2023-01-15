@@ -1,0 +1,34 @@
+
+
+----------------------
+Nume Tabela: joburi
+----------------------
+
+Lista Coloane text: 
+
+Coloana Text 0:
+Numele Coloanei: post
+Tipul Coloanei: 1
+Dimensiunea Coloanei: 25
+Valoarea Implicita: somer
+Valori: 
+----------------------
+
+Lista Coloane int: 
+
+Coloana int 0:
+Numele Coloanei: experienta
+Tipul Coloanei: 2
+Dimensiunea Coloanei: 5
+Valoarea Implicita: 2
+Valori: 
+----------------------
+
+Lista Coloane float: 
+
+Coloana float 0:
+Numele Coloanei: salariu
+Tipul Coloanei: 2
+Dimensiunea Coloanei: 3
+Valoarea Implicita: 3750.5
+Valori: 

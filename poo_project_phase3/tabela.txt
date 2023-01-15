@@ -1,0 +1,9 @@
+tabela
+1
+nume
+1
+20
+dudu
+0
+0
+0

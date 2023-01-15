@@ -1,0 +1,8 @@
+CREATE TABLE persoane IF NOT EXISTS((nume,TEXT,25,dudu), (varsta,INTEGER,3,20), (buget,FLOAT,6,200.525))
+CREATE TABLE joburi IF NOT EXISTS ((post,TEXT,25,somer), (salariu,FLOAT,3,3750.50), (experienta,INTEGER,5,2))
+DISPLAY TABLE persoane
+INSERT INTO persoane VALUES(mihai,18,300.50)
+INSERT INTO persoane VALUES(ana,20,500.25)
+SELECT (nume,varsta) FROM persoane
+UPDATE persoane SET nume = marcel WHERE nume = mihai
+DISPLAY TABLE persoane

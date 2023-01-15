@@ -350,7 +350,7 @@ public:
 			this->columnType = txtCol.columnType;
 			this->columnSize = txtCol.columnSize;
 			this->defaultValue = txtCol.defaultValue;
-			if (txtCol.numberOfValues < 0)
+			if (txtCol.numberOfValues <= 0)
 			{
 				this->numberOfValues = 0;
 				this->values = NULL;
@@ -2080,7 +2080,7 @@ public:
 		DATABASE copy = *this;
 		delete[] this->tables;
 		DATABASE::numberOfTables++;
-		this->tables = new TABLE[DATABASE::numberOfTables];
+		this->tables = new(nothrow) TABLE[DATABASE::numberOfTables];
 		if (DATABASE::numberOfTables > 1)
 		{
 			for (int i = 0; i < DATABASE::numberOfTables - 1; i++)
@@ -2384,11 +2384,10 @@ void InterpretCommand(string command, DATABASE& db)
 				break;
 			}
 			}
-
 		}
 		db += t;
 		std::cout << "\n\nTABELA CU NUMELE " << tableName << " A FOST CREATA CU SUCCES!\n";
-		std::cout << db;
+
 		break;
 	}
 	case 2: //DROP TABLE
@@ -2661,7 +2660,8 @@ void InterpretCommand(string command, DATABASE& db)
 		{
 			throw exception("ERROR! Sintaxa gresita");
 		}
-
+		db.saveDb();
+		db.loadDb();
 		break;
 	}
 	case 13: //SELECT
@@ -2893,6 +2893,7 @@ void InterpretCommand(string command, DATABASE& db)
 			}
 			///TODO: formatare la afisare ca sa se inteleaga coloanele
 		}
+
 		break;
 	}
 	case 14: //UPDATE --DE AICI IN JOS E ORIBIL DAR AM VRUT SA FUNCTIONEZE MACAR
@@ -3422,7 +3423,6 @@ private:
 	vector<string> columnSizes;
 	vector<string> defaultValues;
 public:
-	CreateBuilder() {}
 	CreateBuilder(string tableName, bool conditionExists, int numberOfColumns, vector<string> columnNames, vector<string> columnTypes, vector<string> columnSizes, vector<string> defaultValues) : CommandBuilder(tableName)
 	{
 		this->conditionExists = conditionExists;
@@ -3431,10 +3431,10 @@ public:
 		{
 			for (int i = 0; i < this->numberOfColumns; i++)
 			{
-				this->columnNames[i] = columnNames[i];
-				this->columnTypes[i] = columnTypes[i];
-				this->columnSizes[i] = columnSizes[i];
-				this->defaultValues[i] = defaultValues[i];
+				this->columnNames.push_back(columnNames[i]);
+				this->columnTypes.push_back(columnTypes[i]);
+				this->columnSizes.push_back(columnSizes[i]);
+				this->defaultValues.push_back(defaultValues[i]);
 			}
 		}
 	}
@@ -3446,13 +3446,13 @@ public:
 		{
 			this->command += " IF NOT EXISTS";
 		}
-		this->command += " (";
+		this->command += "(";
 		for (int i = 0; i < this->numberOfColumns; i++)
 		{
-			this->command += "(" + this->columnNames[i] + ", " + this->columnTypes[i] + ", " + this->columnSizes[i] + ", " + this->defaultValues[i] + ")";
+			this->command += "(" + this->columnNames[i] + "," + this->columnTypes[i] + "," + this->columnSizes[i] + "," + this->defaultValues[i] + ")";
 			if (i < this->numberOfColumns - 1)
 			{
-				this->command += ",";
+				this->command += ", ";
 			}
 		}
 		this->command+= ")";
@@ -3598,10 +3598,6 @@ class SelectColumnsBuilder : public SelectBuilder
 	string checkColumnName;
 	string checkValue;
 public:
-	SelectColumnsBuilder()
-	{
-	}
-
 	SelectColumnsBuilder(string tableName, bool conditionExists, int numberOfColumns, vector<string> columns) :SelectBuilder(tableName, conditionExists)
 	{
 		this->numberOfColumns = numberOfColumns;
@@ -3609,7 +3605,7 @@ public:
 		{
 			for (int i = 0; i < this->numberOfColumns; i++)
 			{
-				this->columns[i] = columns[i];
+				this->columns.push_back(columns[i]);
 			}
 		}
 	}
@@ -3621,7 +3617,7 @@ public:
 		{
 			for (int i = 0; i < this->numberOfColumns; i++)
 			{
-				this->columns[i] = columns[i];
+				this->columns.push_back(columns[i]);
 			}
 		}
 		this->checkColumnName = checkColumnName;
@@ -3699,7 +3695,7 @@ class IMenu
 {
 public:
 	virtual void showMenu() = 0;
-	virtual void closeMenu() = 0;
+	virtual void closeMenu(string& command) = 0;
 };
 
 void displayMenu()
@@ -3759,8 +3755,9 @@ void createTable(DATABASE db)
 	columnSizes.push_back(columnSize);
 	defaultValues.push_back(defaultValue);
 	cout << "\nAdaugati alta coloana in tabela? (y/n)\n";
-	cout << alegere;
-	while (alegere != "n" || alegere != "N")
+	cout << "Alegere: ";
+	cin >> alegere;
+	while (alegere == "y" || alegere == "Y")
 	{
 		cout << "Nume Coloana: "; cin >> columnName;
 		cout << "Tip Coloana: "; cin >> columnType;
@@ -3771,26 +3768,30 @@ void createTable(DATABASE db)
 		columnSizes.push_back(columnSize);
 		defaultValues.push_back(defaultValue);
 		cout << "Adaugati alta coloana in tabela? (y/n)\n";
-		cout << alegere;
+		cout << "Alegere: ";
+		cin >> alegere;
 	}
 
-	CreateBuilder create(tableName, conditie, columnNames.size(), columnNames, columnTypes, columnSizes, defaultValues);
 
 	try
 	{
+		CreateBuilder create(tableName, conditie, columnNames.size(), columnNames, columnTypes, columnSizes, defaultValues);
+		cout << create.buildCommand();
+
 		InterpretCommand(create.buildCommand(), db);
 		cout << "\nApasati orice tasta pentru a continua...";
-		getch();
+		_getch();
 		displayMenu();
 	}
 	catch (exception exc)
 	{
 		cout << exc.what();
 		cout << "\nApasati orice tasta pentru a continua...";
-		getch();
+		_getch();
 		displayMenu();
 	}
 }
+
 void dropTable(DATABASE db)
 {
 	system("cls");
@@ -3804,20 +3805,22 @@ void dropTable(DATABASE db)
 	cin >> alegere;
 	if (alegere == "y" || alegere == "Y")
 	{
-		DropBuilder drop(tableName);
 
 		try
 		{
+			DropBuilder drop(tableName);
+
+			cout << drop.buildCommand();
 			InterpretCommand(drop.buildCommand(), db);
 			cout << "\nApasati orice tasta pentru a continua...";
-			getch();
+			_getch();
 			displayMenu();
 		}
 		catch (exception exc)
 		{
 			cout << exc.what();
 			cout << "\nApasati orice tasta pentru a continua...";
-			getch();
+			_getch();
 			displayMenu();
 		}
 	}
@@ -3826,6 +3829,7 @@ void dropTable(DATABASE db)
 		displayMenu();
 	}
 }
+
 void displayTable(DATABASE db)
 {
 	system("cls");
@@ -3839,20 +3843,23 @@ void displayTable(DATABASE db)
 	cin >> alegere;
 	if (alegere == "y" || alegere == "Y")
 	{
-		DisplayBuilder display(tableName);
 
 		try
 		{
+			DisplayBuilder display(tableName);
+
+			cout << display.buildCommand();
+
 			InterpretCommand(display.buildCommand(), db);
 			cout << "\nApasati orice tasta pentru a continua...";
-			getch();
+			_getch();
 			displayMenu();
 		}
 		catch (exception exc)
 		{
 			cout << exc.what();
 			cout << "\nApasati orice tasta pentru a continua...";
-			getch();
+			_getch();
 			displayMenu();
 		}
 	}
@@ -3861,6 +3868,7 @@ void displayTable(DATABASE db)
 		displayMenu();
 	}
 }
+
 void insertData(DATABASE db)
 {
 	system("cls");
@@ -3876,31 +3884,36 @@ void insertData(DATABASE db)
 	cout << "Mai adaugati alta valoare? (y/n)";
 	cout << "Alegere: ";
 	cin >> alegere;
-	while (alegere != "n" || alegere != "N")
+	while (alegere == "y" || alegere == "Y")
 	{
 		cout << "Inserati Valori: "; cin >> value;
 		values.push_back(value);
 		cout << "Mai adaugati alta valoare? (y/n)";
-		cout << "Alegere: ";
+		cout << "\nAlegere: ";
 		cin >> alegere;
 	}
 
 	InsertBuilder insert(tableName, values);
 	try
 	{
+		InsertBuilder insert(tableName, values);
+
+		cout << insert.buildCommand();
+
 		InterpretCommand(insert.buildCommand(), db);
 		cout << "\nApasati orice tasta pentru a continua...";
-		getch();
+		_getch();
 		displayMenu();
 	}
 	catch (exception exc)
 	{
 		cout << exc.what();
 		cout << "\nApasati orice tasta pentru a continua...";
-		getch();
+		_getch();
 		displayMenu();
 	}
 }
+
 void deleteData(DATABASE db)
 {
 	system("cls");
@@ -3920,18 +3933,19 @@ void deleteData(DATABASE db)
 	{
 		InterpretCommand(del.buildCommand(), db);
 		cout << "\nApasati orice tasta pentru a continua...";
-		getch();
+		_getch();
 		displayMenu();
 	}
 	catch (exception exc)
 	{
 		cout << exc.what();
 		cout << "\nApasati orice tasta pentru a continua...";
-		getch();
+		_getch();
 		displayMenu();
 	}
 
 }
+
 void selectData(DATABASE db)
 {
 	system("cls");
@@ -3952,38 +3966,44 @@ void selectData(DATABASE db)
 			conditie = true;
 			cout << "Ce coloana sa verificam?"; cin >> columnName;
 			cout << "Cu ce valoare sa verificam coloana aleasa?"; cin >> value;
-			SelectAllBuilder selectAll(tableName, conditie, columnName, value);
 			try
 			{
+				SelectAllBuilder selectAll(tableName, conditie, columnName, value);
+
+				cout << selectAll.buildCommand();
+
 				InterpretCommand(selectAll.buildCommand(), db);
 				cout << "\nApasati orice tasta pentru a continua...";
-				getch();
+				_getch();
 				displayMenu();
 			}
 			catch (exception exc)
 			{
 				cout << exc.what();
 				cout << "\nApasati orice tasta pentru a continua...";
-				getch();
+				_getch();
 				displayMenu();
 			}
 		}
 		else if (alegere == "n" || alegere == "N")
 		{
 			conditie = false;
-			SelectAllBuilder selectAll(tableName, conditie);
 			try
 			{
+				SelectAllBuilder selectAll(tableName, conditie);
+
+				cout << selectAll.buildCommand();
+
 				InterpretCommand(selectAll.buildCommand(), db);
 				cout << "\nApasati orice tasta pentru a continua...";
-				getch();
+				_getch();
 				displayMenu();
 			}
 			catch (exception exc)
 			{
 				cout << exc.what();
 				cout << "\nApasati orice tasta pentru a continua...";
-				getch();
+				_getch();
 				displayMenu();
 			}
 		}
@@ -4008,43 +4028,50 @@ void selectData(DATABASE db)
 			conditie = true;
 			cout << "Ce coloana sa verificam?"; cin >> columnName;
 			cout << "Cu ce valoare sa verificam coloana aleasa?"; cin >> value;
-			SelectColumnsBuilder selectColumns(tableName, conditie, columns.size(), columns, columnName,value);
 			try
 			{
+				SelectColumnsBuilder selectColumns(tableName, conditie, columns.size(), columns, columnName, value);
+
+				cout << selectColumns.buildCommand();
+
 				InterpretCommand(selectColumns.buildCommand(), db);
 				cout << "\nApasati orice tasta pentru a continua...";
-				getch();
+				_getch();
 				displayMenu();
 			}
 			catch (exception exc)
 			{
 				cout << exc.what();
 				cout << "\nApasati orice tasta pentru a continua...";
-				getch();
+				_getch();
 				displayMenu();
 			}
 		}
 		else if (alegere == "n" || alegere == "N")
 		{
 			conditie = false;
-			SelectColumnsBuilder selectColumns(tableName, conditie, columns.size(), columns);
 			try
 			{
+				SelectColumnsBuilder selectColumns(tableName, conditie, columns.size(), columns);
+
+				cout << selectColumns.buildCommand();
+
 				InterpretCommand(selectColumns.buildCommand(), db);
 				cout << "\nApasati orice tasta pentru a continua...";
-				getch();
+				_getch();
 				displayMenu();
 			}
 			catch (exception exc)
 			{
 				cout << exc.what();
 				cout << "\nApasati orice tasta pentru a continua...";
-				getch();
+				_getch();
 				displayMenu();
 			}
 		}
 	}
 }
+
 void updateData(DATABASE db)
 {
 	system("cls");
@@ -4063,22 +4090,26 @@ void updateData(DATABASE db)
 	cout << "Numele coloanei asupra careia ii aplicam o conditie:"; cin >> checkColumnName;
 	cout << "Valoarea pe care o verificam:"; cin >> checkValue;
 
-	UpdateBuilder update(tableName,setColumnName, setValue,checkColumnName,checkValue);
 	try
 	{
+		UpdateBuilder update(tableName, setColumnName, setValue, checkColumnName, checkValue);
+
+		cout << update.buildCommand();
+
 		InterpretCommand(update.buildCommand(), db);
 		cout << "\nApasati orice tasta pentru a continua...";
-		getch();
+		_getch();
 		displayMenu();
 	}
 	catch (exception exc)
 	{
 		cout << exc.what();
 		cout << "\nApasati orice tasta pentru a continua...";
-		getch();
+		_getch();
 		displayMenu();
 	}
 }
+
 void importData(DATABASE db)
 {
 	system("cls");
@@ -4088,19 +4119,22 @@ void importData(DATABASE db)
 
 	cout << "Nume Tabela: "; cin >> tableName;
 	cout << "Numele fisierului.csv din care sa inseram date"; cin >> filename;
-	ImportBuilder import(tableName, filename);
 	try
 	{
+		ImportBuilder import(tableName, filename);
+
+		cout << import.buildCommand();
+
 		InterpretCommand(import.buildCommand(), db);
 		cout << "\nApasati orice tasta pentru a continua...";
-		getch();
+		_getch();
 		displayMenu();
 	}
 	catch (exception exc)
 	{
 		cout << exc.what();
 		cout << "\nApasati orice tasta pentru a continua...";
-		getch();
+		_getch();
 		displayMenu();
 	}
 }
@@ -4171,10 +4205,16 @@ public:
 					{
 						cout << err.what();
 					}
-					getch();
 					cout << "\nApasa orice tasta pentru a continua...";
+					_getch();
 					closeMenu(command);
 				}
+
+				cout << "\nApasati orice tasta pentru a continua...";
+				_getch();
+				displayMenu();
+				cout << "\nAlege optiunea: "; cin >> option;
+
 				break;
 			case 0:
 				cout << "\nVa multumesc pentru utilizare!";
@@ -4186,11 +4226,11 @@ public:
 		}
 	}
 
-	void closeMenu(string command)
+	void closeMenu(string& command)
 	{
 		system("cls");
 		cout << "Pentru a porni meniul din nou, scrie BACK";
-		cout << "\nIntrodu comanda: "; cin >> command;
+		cout << "\nIntrodu comanda: "; getline(std::cin,command);
 
 	}
 };
@@ -4214,6 +4254,24 @@ int main(int argc, char* argv[])
 	if (argc == 1)
 	{
 		menu.showMenu();
+		//string command;
+		//cout << "Comanda: ";
+		//while (getline(std::cin, command))
+		//{
+		//	try
+		//	{
+		//		cout << "\n" << command << "\n";
+		//		InterpretCommand(command, db);
+		//	}
+		//	catch (exception err)
+		//	{
+		//		cout << err.what();
+		//	}
+		//	cout << "\nApasa orice tasta pentru a continua...";
+		//	_getch();
+		//	system("cls");
+		//	cout << "Comanda: ";
+		//}
 	}
 	else if (argc > 1 && argc < 7)
 	{
@@ -4264,13 +4322,14 @@ int main(int argc, char* argv[])
 	{
 		cout << "\n!!!Aveti voie MAXIM 5 fisiere\n";
 	}
+
+
 	db.saveDb();
 	//std::cout << "\n\n#########################################\n\n";
 	//std::cout << db;
 	return 0;
 
 
-	//TODO: MENIU LMAO
 	// meniu cu optiuni predefinite pentru partile importante ale comenzii,
 	// optiune insert manual command
 	// optiune exit

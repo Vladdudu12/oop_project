@@ -1,0 +1,40 @@
+
+
+----------------------
+Nume Tabela: persoane
+----------------------
+
+Lista Coloane text: 
+
+Coloana Text 0:
+Numele Coloanei: nume
+Tipul Coloanei: 1
+Dimensiunea Coloanei: 25
+Valoarea Implicita: dudu
+Valori: 
+values[0]: mihai
+values[1]: ana
+----------------------
+
+Lista Coloane int: 
+
+Coloana int 0:
+Numele Coloanei: varsta
+Tipul Coloanei: 2
+Dimensiunea Coloanei: 3
+Valoarea Implicita: 20
+Valori: 
+values[0]: 18
+values[1]: 20
+----------------------
+
+Lista Coloane float: 
+
+Coloana float 0:
+Numele Coloanei: buget
+Tipul Coloanei: 2
+Dimensiunea Coloanei: 6
+Valoarea Implicita: 200.525
+Valori: 
+values[0]: 300.5
+values[1]: 500.25

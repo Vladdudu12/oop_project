@@ -1,0 +1,21 @@
+
+
+----------------------
+Nume Tabela: tabela
+----------------------
+
+Lista Coloane text: 
+
+Coloana Text 0:
+Numele Coloanei: nume
+Tipul Coloanei: 1
+Dimensiunea Coloanei: 20
+Valoarea Implicita: dudu
+Valori: 
+----------------------
+
+Lista Coloane int: 
+
+----------------------
+
+Lista Coloane float: 
