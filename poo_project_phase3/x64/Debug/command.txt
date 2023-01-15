@@ -1,0 +1,6 @@
+CREATE TABLE persoane IF NOT EXISTS((nume,TEXT,25,dudu), (varsta,INTEGER,3,20), (buget,FLOAT,6,200.525))
+DISPLAY TABLE persoane
+INSERT INTO persoane VALUES(mihai,18,300.50)
+INSERT INTO persoane VALUES(ana,20,500.25)
+SELECT (nume,varsta) FROM persoane
+DISPLAY TABLE persoane

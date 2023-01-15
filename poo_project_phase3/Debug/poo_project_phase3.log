@@ -1,0 +1,18 @@
+﻿  poo_project_phase3.cpp
+C:\Users\vladd\source\repos\poo_project_phase3\poo_project_phase3\poo_project_phase3.cpp(1306,21): warning C4018: '<': signed/unsigned mismatch
+C:\Users\vladd\source\repos\poo_project_phase3\poo_project_phase3\poo_project_phase3.cpp(1339,21): warning C4018: '<': signed/unsigned mismatch
+C:\Users\vladd\source\repos\poo_project_phase3\poo_project_phase3\poo_project_phase3.cpp(1373,21): warning C4018: '<': signed/unsigned mismatch
+C:\Users\vladd\source\repos\poo_project_phase3\poo_project_phase3\poo_project_phase3.cpp(2351,21): warning C4018: '<': signed/unsigned mismatch
+C:\Users\vladd\source\repos\poo_project_phase3\poo_project_phase3\poo_project_phase3.cpp(2471,22): warning C4018: '<': signed/unsigned mismatch
+C:\Users\vladd\source\repos\poo_project_phase3\poo_project_phase3\poo_project_phase3.cpp(2488,23): warning C4018: '<': signed/unsigned mismatch
+C:\Users\vladd\source\repos\poo_project_phase3\poo_project_phase3\poo_project_phase3.cpp(2511,12): warning C4834: discarding return value of function with 'nodiscard' attribute
+C:\Users\vladd\source\repos\poo_project_phase3\poo_project_phase3\poo_project_phase3.cpp(2533,12): warning C4834: discarding return value of function with 'nodiscard' attribute
+C:\Users\vladd\source\repos\poo_project_phase3\poo_project_phase3\poo_project_phase3.cpp(2569,21): warning C4018: '<': signed/unsigned mismatch
+C:\Users\vladd\source\repos\poo_project_phase3\poo_project_phase3\poo_project_phase3.cpp(2676,21): warning C4018: '<': signed/unsigned mismatch
+C:\Users\vladd\source\repos\poo_project_phase3\poo_project_phase3\poo_project_phase3.cpp(2799,22): warning C4018: '<': signed/unsigned mismatch
+C:\Users\vladd\source\repos\poo_project_phase3\poo_project_phase3\poo_project_phase3.cpp(3237,21): warning C4018: '<': signed/unsigned mismatch
+C:\Users\vladd\source\repos\poo_project_phase3\poo_project_phase3\poo_project_phase3.cpp(3268,26): warning C4018: '<': signed/unsigned mismatch
+C:\Users\vladd\source\repos\poo_project_phase3\poo_project_phase3\poo_project_phase3.cpp(3285,27): warning C4018: '<': signed/unsigned mismatch
+C:\Users\vladd\source\repos\poo_project_phase3\poo_project_phase3\poo_project_phase3.cpp(3308,16): warning C4834: discarding return value of function with 'nodiscard' attribute
+C:\Users\vladd\source\repos\poo_project_phase3\poo_project_phase3\poo_project_phase3.cpp(3330,16): warning C4834: discarding return value of function with 'nodiscard' attribute
+  poo_project_phase3.vcxproj -> C:\Users\vladd\source\repos\poo_project_phase3\Debug\poo_project_phase3.exe
