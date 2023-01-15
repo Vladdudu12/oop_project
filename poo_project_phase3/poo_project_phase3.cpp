@@ -3411,29 +3411,24 @@ public:
 	}
 };
 
-
 //CREATE TABLE table_name [IF NOT EXISTS] ((nume_coloana_1,tip,dimensiune,valoare_implicita),(...))
 class CreateBuilder : public CommandBuilder
 {
 private:
 	bool conditionExists = false;
 	int numberOfColumns;
-	string* columnNames;
-	string* columnTypes;
-	string* columnSizes;
-	string* defaultValues;
+	vector<string> columnNames;
+	vector<string> columnTypes;
+	vector<string> columnSizes;
+	vector<string> defaultValues;
 public:
 	CreateBuilder() {}
-	CreateBuilder(bool conditionExists, int numberOfColumns, string* columnNames, string*columnTypes, string* columnSizes, string* defaultValues)
+	CreateBuilder(string tableName, bool conditionExists, int numberOfColumns, vector<string> columnNames, vector<string> columnTypes, vector<string> columnSizes, vector<string> defaultValues) : CommandBuilder(tableName)
 	{
 		this->conditionExists = conditionExists;
 		this->numberOfColumns = numberOfColumns;
 		if (this->numberOfColumns > 0)
 		{
-			this->columnNames = new string[this->numberOfColumns];
-			this->columnTypes = new string[this->numberOfColumns];
-			this->columnSizes = new string[this->numberOfColumns];
-			this->defaultValues = new string[this->numberOfColumns];
 			for (int i = 0; i < this->numberOfColumns; i++)
 			{
 				this->columnNames[i] = columnNames[i];
@@ -3471,6 +3466,7 @@ class DropBuilder : public CommandBuilder
 {
 public:
 	DropBuilder() {}
+	DropBuilder(string tableName) : CommandBuilder(tableName) {}
 
 	string buildCommand()
 	{
@@ -3484,6 +3480,7 @@ class DisplayBuilder : public CommandBuilder
 {
 public:
 	DisplayBuilder() {}
+	DisplayBuilder(string tableName) : CommandBuilder(tableName) {}
 
 	string buildCommand()
 	{
@@ -3496,23 +3493,29 @@ public:
 class InsertBuilder : public CommandBuilder
 {
 private:
-	string columnName;
-	string columnType;
-	string columnSize;
-	string defaultValue;
+	vector<string>values;
 public:
 	InsertBuilder() {}
-	InsertBuilder(string columnName, string columnType, string columnSize, string defaultValue) 
+	InsertBuilder(string tableName, vector<string> values) : CommandBuilder(tableName)
 	{
-		this->columnName = columnName;
-		this->columnType = columnType;
-		this->columnSize = columnSize;
-		this->defaultValue = defaultValue;
+		for (int i = 0; i < values.size(); i++)
+		{
+			this->values[i] = values[i];
+		}
 	}
 
 	string buildCommand()
 	{
-		this->command = "INSERT INTO " + this->tableName + "VALUES(" + this->columnName + "," + this->columnType + "," + this->columnSize + "," + this->defaultValue + ")";
+		this->command = "INSERT INTO " + this->tableName + " VALUES(";
+		for (int i = 0; i < this->values.size(); i++)
+		{
+			this->command += this->values[i];
+			if (i < this->values.size() - 1)
+			{
+				this->command += ",";
+			}
+		}
+		this->command += ")";
 		return this->command;
 	}
 };
@@ -3525,7 +3528,7 @@ private:
 	string value;
 public:
 	DeleteBuilder() {}
-	DeleteBuilder(string columnName, string value)
+	DeleteBuilder(string tableName, string columnName, string value) : CommandBuilder(tableName)
 	{
 		this->columnName = columnName;
 		this->value = value;
@@ -3546,9 +3549,8 @@ protected:
 	bool conditionExists = false;
 public:
 	SelectBuilder() {}
-	SelectBuilder(string finder, bool conditionExists) 
+	SelectBuilder(string tableName, bool conditionExists) : CommandBuilder(tableName)
 	{
-		this->finder = finder;
 		this->conditionExists = conditionExists;
 	}
 };
@@ -3564,7 +3566,13 @@ public:
 		this->finder = "ALL";
 	}
 
-	SelectAllBuilder(string columnName, string value) :SelectBuilder()
+	SelectAllBuilder(string tableName, bool conditionExists) :SelectBuilder(tableName, conditionExists)
+	{
+		this->finder = "ALL";
+	}
+
+
+	SelectAllBuilder(string tableName, bool conditionExists, string columnName, string value) :SelectBuilder(tableName, conditionExists)
 	{
 		this->finder = "ALL";
 		this->columnName = columnName;
@@ -3586,20 +3594,19 @@ public:
 class SelectColumnsBuilder : public SelectBuilder
 {
 	int numberOfColumns;
-	string* columns;
-	string columnName;
-	string value;
+	vector<string> columns;
+	string checkColumnName;
+	string checkValue;
 public:
 	SelectColumnsBuilder()
 	{
 	}
 
-	SelectColumnsBuilder(int numberOfColumns, string* columns) :SelectBuilder()
+	SelectColumnsBuilder(string tableName, bool conditionExists, int numberOfColumns, vector<string> columns) :SelectBuilder(tableName, conditionExists)
 	{
 		this->numberOfColumns = numberOfColumns;
 		if (this->numberOfColumns > 0)
 		{
-			this->columns = new string[this->numberOfColumns];
 			for (int i = 0; i < this->numberOfColumns; i++)
 			{
 				this->columns[i] = columns[i];
@@ -3607,19 +3614,18 @@ public:
 		}
 	}
 
-	SelectColumnsBuilder(int numberOfColumns, string* columns, string columnName, string value) :SelectBuilder()
+	SelectColumnsBuilder(string tableName, bool conditionExists, int numberOfColumns, vector<string> columns, string checkColumnName, string checkValue) :SelectBuilder(tableName, conditionExists)
 	{
 		this->numberOfColumns = numberOfColumns;
 		if (this->numberOfColumns > 0)
 		{
-			this->columns = new string[this->numberOfColumns];
 			for (int i = 0; i < this->numberOfColumns; i++)
 			{
 				this->columns[i] = columns[i];
 			}
 		}
-		this->columnName = columnName;
-		this->value = value;
+		this->checkColumnName = checkColumnName;
+		this->checkValue = checkValue;
 	}
 
 	string buildCommand()
@@ -3636,7 +3642,7 @@ public:
 		this->command = "SELECT (" + this->finder + ")" + " FROM " + this->tableName;
 		if (this->conditionExists == true)
 		{
-			this->command += " WHERE " + this->columnName + "=" + this->value;
+			this->command += " WHERE " + this->checkColumnName + "=" + this->checkValue;
 		}
 		return this->command;
 	}
@@ -3653,7 +3659,7 @@ private:
 
 public:
 	UpdateBuilder() {}
-	UpdateBuilder(string setColumnName, string setValue, string checkColumnName, string checkValue)
+	UpdateBuilder(string tableName, string setColumnName, string setValue, string checkColumnName, string checkValue) : CommandBuilder(tableName)
 	{
 		this->setColumnName = setColumnName;
 		this->setValue = setValue;
@@ -3675,7 +3681,7 @@ private:
 	string filename;
 public:
 	ImportBuilder() {}
-	ImportBuilder(string filename) 
+	ImportBuilder(string tableName, string filename) : CommandBuilder(tableName)
 	{
 		this->filename = filename;
 	}
@@ -3687,12 +3693,417 @@ public:
 		return this->command;
 	}
 };
+
+
 class IMenu 
 {
 public:
 	virtual void showMenu() = 0;
 	virtual void closeMenu() = 0;
 };
+
+void displayMenu()
+{
+	//CREATE = 1, DROP = 2, DISPLAY = 3,
+	//INSERT = 11, DELETE = 12, SELECT = 13, UPDATE = 14, IMPORT = 15,
+	system("cls");
+	cout << "##############################################\n";
+	cout << "\t\tMeniu Utilizare \t \n";
+	cout << " 1.CREATE TABLE\n";
+	cout << " 2.DROP TABLE\n";
+	cout << " 3.DISPLAY TABLE\n";
+	cout << " 11.INSERT INTO TABLE\n";
+	cout << " 12.DELETE VALUES FROM TABLE\n";
+	cout << " 13.SELECT FROM TABLE\n";
+	cout << " 14.UPDATE VALUE FROM TABLE\n";
+	cout << " 15.IMPORT FROM CSV FILE\n";
+	cout << " 20.CUSTOM COMMAND\n";
+	cout << " 0.Exit\n";
+}
+
+void createTable(DATABASE db)
+{
+	system("cls");
+
+	bool conditie = false;
+	string alegere;
+	string tableName;
+	vector<string> columnNames;
+	vector<string> columnTypes;
+	vector<string> columnSizes;
+	vector<string> defaultValues;
+	string columnName;
+	string columnType;
+	string columnSize;
+	string defaultValue;
+
+	cout << "Nume Tabela: "; cin >> tableName;
+	cout << "Conditie IF NOT EXISTS ? (y sau n)\n";
+	cout << "Alegere: ";
+	cin >> alegere;
+	if (alegere == "y" || alegere == "Y")
+	{
+		conditie = true;
+	}
+	else if (alegere == "n" || alegere == "N")
+	{
+		conditie = false;
+	}
+
+	cout << "Nume Coloana: "; cin >> columnName;
+	cout << "Tip Coloana: "; cin >> columnType;
+	cout << "Marime Coloana: "; cin >> columnSize;
+	cout << "Valoare Default: "; cin >> defaultValue;
+	columnNames.push_back(columnName);
+	columnTypes.push_back(columnType);
+	columnSizes.push_back(columnSize);
+	defaultValues.push_back(defaultValue);
+	cout << "\nAdaugati alta coloana in tabela? (y/n)\n";
+	cout << alegere;
+	while (alegere != "n" || alegere != "N")
+	{
+		cout << "Nume Coloana: "; cin >> columnName;
+		cout << "Tip Coloana: "; cin >> columnType;
+		cout << "Marime Coloana: "; cin >> columnSize;
+		cout << "Valoare Default: "; cin >> defaultValue;
+		columnNames.push_back(columnName);
+		columnTypes.push_back(columnType);
+		columnSizes.push_back(columnSize);
+		defaultValues.push_back(defaultValue);
+		cout << "Adaugati alta coloana in tabela? (y/n)\n";
+		cout << alegere;
+	}
+
+	CreateBuilder create(tableName, conditie, columnNames.size(), columnNames, columnTypes, columnSizes, defaultValues);
+
+	try
+	{
+		InterpretCommand(create.buildCommand(), db);
+		cout << "\nApasati orice tasta pentru a continua...";
+		getch();
+		displayMenu();
+	}
+	catch (exception exc)
+	{
+		cout << exc.what();
+		cout << "\nApasati orice tasta pentru a continua...";
+		getch();
+		displayMenu();
+	}
+}
+void dropTable(DATABASE db)
+{
+	system("cls");
+
+	string tableName;
+	string alegere;
+
+	cout << "Nume Tabela: "; cin >> tableName;
+	cout << "Sunteti sigur? (y sau n)\n";
+	cout << "Alegere: ";
+	cin >> alegere;
+	if (alegere == "y" || alegere == "Y")
+	{
+		DropBuilder drop(tableName);
+
+		try
+		{
+			InterpretCommand(drop.buildCommand(), db);
+			cout << "\nApasati orice tasta pentru a continua...";
+			getch();
+			displayMenu();
+		}
+		catch (exception exc)
+		{
+			cout << exc.what();
+			cout << "\nApasati orice tasta pentru a continua...";
+			getch();
+			displayMenu();
+		}
+	}
+	else if (alegere == "n" || alegere == "N")
+	{
+		displayMenu();
+	}
+}
+void displayTable(DATABASE db)
+{
+	system("cls");
+
+	string tableName;
+	string alegere;
+
+	cout << "Nume Tabela: "; cin >> tableName;
+	cout << "Sunteti sigur? (y sau n)\n";
+	cout << "Alegere: ";
+	cin >> alegere;
+	if (alegere == "y" || alegere == "Y")
+	{
+		DisplayBuilder display(tableName);
+
+		try
+		{
+			InterpretCommand(display.buildCommand(), db);
+			cout << "\nApasati orice tasta pentru a continua...";
+			getch();
+			displayMenu();
+		}
+		catch (exception exc)
+		{
+			cout << exc.what();
+			cout << "\nApasati orice tasta pentru a continua...";
+			getch();
+			displayMenu();
+		}
+	}
+	else if (alegere == "n" || alegere == "N")
+	{
+		displayMenu();
+	}
+}
+void insertData(DATABASE db)
+{
+	system("cls");
+
+	string tableName;
+	vector<string>values;
+	string value;
+	string alegere;
+
+	cout << "Nume Tabela: "; cin >> tableName;
+	cout << "Inserati Valori: "; cin >> value;
+	values.push_back(value);
+	cout << "Mai adaugati alta valoare? (y/n)";
+	cout << "Alegere: ";
+	cin >> alegere;
+	while (alegere != "n" || alegere != "N")
+	{
+		cout << "Inserati Valori: "; cin >> value;
+		values.push_back(value);
+		cout << "Mai adaugati alta valoare? (y/n)";
+		cout << "Alegere: ";
+		cin >> alegere;
+	}
+
+	InsertBuilder insert(tableName, values);
+	try
+	{
+		InterpretCommand(insert.buildCommand(), db);
+		cout << "\nApasati orice tasta pentru a continua...";
+		getch();
+		displayMenu();
+	}
+	catch (exception exc)
+	{
+		cout << exc.what();
+		cout << "\nApasati orice tasta pentru a continua...";
+		getch();
+		displayMenu();
+	}
+}
+void deleteData(DATABASE db)
+{
+	system("cls");
+
+	string tableName;
+	string columnName;
+	string value;
+	string alegere;
+
+	cout << "Nume Tabela: "; cin >> tableName;
+	cout << "Ce coloana sa verificam?"; cin >> columnName;
+	cout << "Cu ce valoare sa verificam coloana aleasa?"; cin >> value;
+	
+	DeleteBuilder del(tableName, columnName, value);
+
+	try
+	{
+		InterpretCommand(del.buildCommand(), db);
+		cout << "\nApasati orice tasta pentru a continua...";
+		getch();
+		displayMenu();
+	}
+	catch (exception exc)
+	{
+		cout << exc.what();
+		cout << "\nApasati orice tasta pentru a continua...";
+		getch();
+		displayMenu();
+	}
+
+}
+void selectData(DATABASE db)
+{
+	system("cls");
+
+	string columnName;
+	string value;
+	string alegere;
+	bool conditie = false;
+
+	string tableName;
+	cout << "Nume Tabela: "; cin >> tableName;
+	cout << "Selectam TOATE coloanele? (y/n): "; cin >> alegere;
+	if (alegere == "y" || alegere == "Y")
+	{
+		cout << "Verificam si o conditie? (y/n): "; cin >> alegere;
+		if (alegere == "y" || alegere == "Y")
+		{
+			conditie = true;
+			cout << "Ce coloana sa verificam?"; cin >> columnName;
+			cout << "Cu ce valoare sa verificam coloana aleasa?"; cin >> value;
+			SelectAllBuilder selectAll(tableName, conditie, columnName, value);
+			try
+			{
+				InterpretCommand(selectAll.buildCommand(), db);
+				cout << "\nApasati orice tasta pentru a continua...";
+				getch();
+				displayMenu();
+			}
+			catch (exception exc)
+			{
+				cout << exc.what();
+				cout << "\nApasati orice tasta pentru a continua...";
+				getch();
+				displayMenu();
+			}
+		}
+		else if (alegere == "n" || alegere == "N")
+		{
+			conditie = false;
+			SelectAllBuilder selectAll(tableName, conditie);
+			try
+			{
+				InterpretCommand(selectAll.buildCommand(), db);
+				cout << "\nApasati orice tasta pentru a continua...";
+				getch();
+				displayMenu();
+			}
+			catch (exception exc)
+			{
+				cout << exc.what();
+				cout << "\nApasati orice tasta pentru a continua...";
+				getch();
+				displayMenu();
+			}
+		}
+	}
+	else if (alegere == "n" || alegere == "N")
+	{
+		vector<string> columns;
+		string column;
+		cout << "Ce coloana sa afisam? "; cin >> column;
+		columns.push_back(column);
+		cout << "Mai afisam alta coloana? (y/n)"; cin >> alegere;
+		while (alegere != "n" || alegere == "N")
+		{
+			cout << "Ce coloana sa afisam? "; cin >> column;
+			columns.push_back(column);
+			cout << "Mai afisam alta coloana? (y/n)"; cin >> alegere;
+		}
+
+		cout << "Verificam si o conditie? (y/n): "; cin >> alegere;
+		if (alegere == "y" || alegere == "Y")
+		{
+			conditie = true;
+			cout << "Ce coloana sa verificam?"; cin >> columnName;
+			cout << "Cu ce valoare sa verificam coloana aleasa?"; cin >> value;
+			SelectColumnsBuilder selectColumns(tableName, conditie, columns.size(), columns, columnName,value);
+			try
+			{
+				InterpretCommand(selectColumns.buildCommand(), db);
+				cout << "\nApasati orice tasta pentru a continua...";
+				getch();
+				displayMenu();
+			}
+			catch (exception exc)
+			{
+				cout << exc.what();
+				cout << "\nApasati orice tasta pentru a continua...";
+				getch();
+				displayMenu();
+			}
+		}
+		else if (alegere == "n" || alegere == "N")
+		{
+			conditie = false;
+			SelectColumnsBuilder selectColumns(tableName, conditie, columns.size(), columns);
+			try
+			{
+				InterpretCommand(selectColumns.buildCommand(), db);
+				cout << "\nApasati orice tasta pentru a continua...";
+				getch();
+				displayMenu();
+			}
+			catch (exception exc)
+			{
+				cout << exc.what();
+				cout << "\nApasati orice tasta pentru a continua...";
+				getch();
+				displayMenu();
+			}
+		}
+	}
+}
+void updateData(DATABASE db)
+{
+	system("cls");
+
+	string tableName;
+	string alegere;
+
+	string setColumnName;
+	string setValue;
+	string checkColumnName;
+	string checkValue;
+
+	cout << "Nume Tabela: "; cin >> tableName;
+	cout << "Din ce coloana modificam?:"; cin >> setColumnName;
+	cout << "Valoarea pe care o vom modifica:"; cin >> setValue;
+	cout << "Numele coloanei asupra careia ii aplicam o conditie:"; cin >> checkColumnName;
+	cout << "Valoarea pe care o verificam:"; cin >> checkValue;
+
+	UpdateBuilder update(tableName,setColumnName, setValue,checkColumnName,checkValue);
+	try
+	{
+		InterpretCommand(update.buildCommand(), db);
+		cout << "\nApasati orice tasta pentru a continua...";
+		getch();
+		displayMenu();
+	}
+	catch (exception exc)
+	{
+		cout << exc.what();
+		cout << "\nApasati orice tasta pentru a continua...";
+		getch();
+		displayMenu();
+	}
+}
+void importData(DATABASE db)
+{
+	system("cls");
+
+	string tableName;
+	string filename;
+
+	cout << "Nume Tabela: "; cin >> tableName;
+	cout << "Numele fisierului.csv din care sa inseram date"; cin >> filename;
+	ImportBuilder import(tableName, filename);
+	try
+	{
+		InterpretCommand(import.buildCommand(), db);
+		cout << "\nApasati orice tasta pentru a continua...";
+		getch();
+		displayMenu();
+	}
+	catch (exception exc)
+	{
+		cout << exc.what();
+		cout << "\nApasati orice tasta pentru a continua...";
+		getch();
+		displayMenu();
+	}
+}
 
 class Menu : IMenu
 {
@@ -3703,37 +4114,84 @@ public:
 	
 	void showMenu() 
 	{
-		system("cls");
 		int option;
 		string command;
-		cout << "Alege optiunea: ";
-		cin >> option;
-		
-	}
-
-	void closeMenu() 
-	{
 		system("cls");
-		string command;
-		std::cout << "Intorduceti comanda: ";
-		while (getline(cin, command)) //sa nu uit sa modific cu std::cin la final
+		displayMenu();
+		cout << "\nAlege optiunea: "; cin >> option;
+		while (option != 0)
 		{
-			if (command == "exit" || command == "quit")
+
+			//CREATE = 1, DROP = 2, DISPLAY = 3,
+			//INSERT = 11, DELETE = 12, SELECT = 13, UPDATE = 14, IMPORT = 15,
+			switch (option)
 			{
+			case 1:
+				createTable(this->db);
+				cout << "\nAlege optiunea: "; cin >> option;
+				break;
+			case 2:
+				dropTable(this->db);
+				cout << "\nAlege optiunea: "; cin >> option;
+				break;
+			case 3:
+				displayTable(this->db);
+				cout << "\nAlege optiunea: "; cin >> option;
+				break;
+			case 11:
+				insertData(this->db);
+				cout << "\nAlege optiunea: "; cin >> option;
+				break;
+			case 12:
+				deleteData(this->db);
+				cout << "\nAlege optiunea: "; cin >> option;
+				break;
+			case 13:
+				selectData(this->db);
+				cout << "\nAlege optiunea: "; cin >> option;
+				break;
+			case 14:
+				updateData(this->db);
+				cout << "\nAlege optiunea: "; cin >> option;
+				break;
+			case 15:
+				importData(this->db);
+				cout << "\nAlege optiunea: "; cin >> option;
+				break;
+			case 20:
+				closeMenu(command);
+				while (command != "BACK")
+				{
+					try
+					{
+						cout << "\n" << command << "\n";
+						InterpretCommand(command, db);
+					}
+					catch (exception err)
+					{
+						cout << err.what();
+					}
+					getch();
+					cout << "\nApasa orice tasta pentru a continua...";
+					closeMenu(command);
+				}
+				break;
+			case 0:
+				cout << "\nVa multumesc pentru utilizare!";
+				break;
+			default:
+				cout << "\nOptiune invalida! Mai incearca o data: "; cin >> option;
 				break;
 			}
-
-			try
-			{
-				std::cout << "\n\n" << command << "\n";
-				InterpretCommand(command, this->db);
-			}
-			catch (exception exc)
-			{
-				std::cout << exc.what();
-			}
-			std::cout << "\nIntorduceti comanda: ";
 		}
+	}
+
+	void closeMenu(string command)
+	{
+		system("cls");
+		cout << "Pentru a porni meniul din nou, scrie BACK";
+		cout << "\nIntrodu comanda: "; cin >> command;
+
 	}
 };
 
@@ -3748,11 +4206,11 @@ int main(int argc, char* argv[])
 	db.loadDb();
 	Menu menu(db);
 
-	std::cout << "argc: " << argc << endl;
-	for (int i = 0; i < argc; i++)
-	{
-		cout << "argv[" << i << "]:" << argv[i] << endl;
-	}
+	//std::cout << "argc: " << argc << endl;
+	//for (int i = 0; i < argc; i++)
+	//{
+	//	cout << "argv[" << i << "]:" << argv[i] << endl;
+	//}
 	if (argc == 1)
 	{
 		menu.showMenu();
