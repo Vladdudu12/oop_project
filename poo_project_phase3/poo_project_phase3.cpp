@@ -5,6 +5,8 @@
 #include <vector>
 #include <cstdio>
 #include <ctime>
+#include <conio.h>
+
 using namespace std;
 
 
@@ -3386,6 +3388,355 @@ void InterpretCommand(string command, DATABASE& db)
 }
 
 int DATABASE::numberOfTables = 0;
+
+class CommandBuilder
+{
+protected:
+	string tableName;
+	string command;
+public:
+	CommandBuilder() {}
+	CommandBuilder(string tableName) : tableName(tableName) {}
+
+	virtual string buildCommand() = 0;
+
+	void setTableName(string tableName)
+	{
+		this->tableName = tableName;
+	}
+
+	string getTableName()
+	{
+		return this->tableName;
+	}
+};
+
+
+//CREATE TABLE table_name [IF NOT EXISTS] ((nume_coloana_1,tip,dimensiune,valoare_implicita),(...))
+class CreateBuilder : public CommandBuilder
+{
+private:
+	bool conditionExists = false;
+	int numberOfColumns;
+	string* columnNames;
+	string* columnTypes;
+	string* columnSizes;
+	string* defaultValues;
+public:
+	CreateBuilder() {}
+	CreateBuilder(bool conditionExists, int numberOfColumns, string* columnNames, string*columnTypes, string* columnSizes, string* defaultValues)
+	{
+		this->conditionExists = conditionExists;
+		this->numberOfColumns = numberOfColumns;
+		if (this->numberOfColumns > 0)
+		{
+			this->columnNames = new string[this->numberOfColumns];
+			this->columnTypes = new string[this->numberOfColumns];
+			this->columnSizes = new string[this->numberOfColumns];
+			this->defaultValues = new string[this->numberOfColumns];
+			for (int i = 0; i < this->numberOfColumns; i++)
+			{
+				this->columnNames[i] = columnNames[i];
+				this->columnTypes[i] = columnTypes[i];
+				this->columnSizes[i] = columnSizes[i];
+				this->defaultValues[i] = defaultValues[i];
+			}
+		}
+	}
+
+	string buildCommand()
+	{
+		this->command = "CREATE TABLE " + this->tableName;
+		if (this->conditionExists == true)
+		{
+			this->command += " IF NOT EXISTS";
+		}
+		this->command += " (";
+		for (int i = 0; i < this->numberOfColumns; i++)
+		{
+			this->command += "(" + this->columnNames[i] + ", " + this->columnTypes[i] + ", " + this->columnSizes[i] + ", " + this->defaultValues[i] + ")";
+			if (i < this->numberOfColumns - 1)
+			{
+				this->command += ",";
+			}
+		}
+		this->command+= ")";
+
+		return this->command;
+	}
+};
+
+//DROP TABLE table_name
+class DropBuilder : public CommandBuilder
+{
+public:
+	DropBuilder() {}
+
+	string buildCommand()
+	{
+		this->command = "DROP TABLE " + this->tableName;
+		return this->command;
+	}
+};
+
+//DISPLAY TABLE table_name
+class DisplayBuilder : public CommandBuilder
+{
+public:
+	DisplayBuilder() {}
+
+	string buildCommand()
+	{
+		this->command = "DISPLAY TABLE " + this->tableName;
+		return this->command;
+	}
+};
+
+//INSERT INTO table_name VALUES(...);
+class InsertBuilder : public CommandBuilder
+{
+private:
+	string columnName;
+	string columnType;
+	string columnSize;
+	string defaultValue;
+public:
+	InsertBuilder() {}
+	InsertBuilder(string columnName, string columnType, string columnSize, string defaultValue) 
+	{
+		this->columnName = columnName;
+		this->columnType = columnType;
+		this->columnSize = columnSize;
+		this->defaultValue = defaultValue;
+	}
+
+	string buildCommand()
+	{
+		this->command = "INSERT INTO " + this->tableName + "VALUES(" + this->columnName + "," + this->columnType + "," + this->columnSize + "," + this->defaultValue + ")";
+		return this->command;
+	}
+};
+
+//DELETE FROM table_name WHERE column_name=value
+class DeleteBuilder : public CommandBuilder
+{
+private:
+	string columnName;
+	string value;
+public:
+	DeleteBuilder() {}
+	DeleteBuilder(string columnName, string value)
+	{
+		this->columnName = columnName;
+		this->value = value;
+	}
+
+	string buildCommand()
+	{
+		this->command = "DELETE FROM " + this->tableName + " WHERE " + this->columnName + "=" + this->value;
+		return this->command;
+	}
+};
+
+//SELECT ALL/(coloana) FROM table_name [WHERE column_name=value]
+class SelectBuilder: protected CommandBuilder
+{
+protected:
+	string finder;
+	bool conditionExists = false;
+public:
+	SelectBuilder() {}
+	SelectBuilder(string finder, bool conditionExists) 
+	{
+		this->finder = finder;
+		this->conditionExists = conditionExists;
+	}
+};
+
+//SELECT ALL FROM table_name [WHERE column_name=value]
+class SelectAllBuilder : public SelectBuilder
+{
+	string columnName;
+	string value;
+public:
+	SelectAllBuilder()
+	{
+		this->finder = "ALL";
+	}
+
+	SelectAllBuilder(string columnName, string value) :SelectBuilder()
+	{
+		this->finder = "ALL";
+		this->columnName = columnName;
+		this->value = value;
+	}
+
+	string buildCommand()
+	{
+		this->command += "SELECT " + this->finder + " FROM " + this->tableName;
+		if (this->conditionExists == true)
+		{
+			this->command += " WHERE " + this->columnName + "=" + this->value;
+		}
+		return this->command;
+	}
+};
+
+//SELECT (column,..) FROM table_name [WHERE column_name=value]
+class SelectColumnsBuilder : public SelectBuilder
+{
+	int numberOfColumns;
+	string* columns;
+	string columnName;
+	string value;
+public:
+	SelectColumnsBuilder()
+	{
+	}
+
+	SelectColumnsBuilder(int numberOfColumns, string* columns) :SelectBuilder()
+	{
+		this->numberOfColumns = numberOfColumns;
+		if (this->numberOfColumns > 0)
+		{
+			this->columns = new string[this->numberOfColumns];
+			for (int i = 0; i < this->numberOfColumns; i++)
+			{
+				this->columns[i] = columns[i];
+			}
+		}
+	}
+
+	SelectColumnsBuilder(int numberOfColumns, string* columns, string columnName, string value) :SelectBuilder()
+	{
+		this->numberOfColumns = numberOfColumns;
+		if (this->numberOfColumns > 0)
+		{
+			this->columns = new string[this->numberOfColumns];
+			for (int i = 0; i < this->numberOfColumns; i++)
+			{
+				this->columns[i] = columns[i];
+			}
+		}
+		this->columnName = columnName;
+		this->value = value;
+	}
+
+	string buildCommand()
+	{
+		for (int i = 0; i < this->numberOfColumns; i++)
+		{
+			this->finder += this->columns[i] + ",";
+
+			if(i < this->numberOfColumns - 1)
+			{
+				this->finder += ",";
+			}
+		}
+		this->command = "SELECT (" + this->finder + ")" + " FROM " + this->tableName;
+		if (this->conditionExists == true)
+		{
+			this->command += " WHERE " + this->columnName + "=" + this->value;
+		}
+		return this->command;
+	}
+};
+
+//UPDATE table_name SET column_name=value WHERE column_name=value
+class UpdateBuilder : public CommandBuilder
+{
+private:
+	string setColumnName;
+	string setValue;
+	string checkColumnName;
+	string checkValue;
+
+public:
+	UpdateBuilder() {}
+	UpdateBuilder(string setColumnName, string setValue, string checkColumnName, string checkValue)
+	{
+		this->setColumnName = setColumnName;
+		this->setValue = setValue;
+		this->checkColumnName = checkColumnName;
+		this->checkValue = checkValue;
+	}
+
+	string buildCommand()
+	{
+		this->command = "UPDATE " + this->tableName + " SET " + this->setColumnName + "=" + this->setValue + " WHERE " + this->checkColumnName + "=" + this->checkValue;
+		return this->command;
+	}
+};
+
+//IMPORT table_name filename
+class ImportBuilder : public CommandBuilder
+{
+private: 
+	string filename;
+public:
+	ImportBuilder() {}
+	ImportBuilder(string filename) 
+	{
+		this->filename = filename;
+	}
+
+
+	string buildCommand()
+	{
+		this->command = "IMPORT " + this->tableName + " " + this->filename;
+		return this->command;
+	}
+};
+class IMenu 
+{
+public:
+	virtual void showMenu() = 0;
+	virtual void closeMenu() = 0;
+};
+
+class Menu : IMenu
+{
+private:
+	DATABASE db;
+public:
+	Menu(DATABASE _db) : db(_db) { }
+	
+	void showMenu() 
+	{
+		system("cls");
+		int option;
+		string command;
+		cout << "Alege optiunea: ";
+		cin >> option;
+		
+	}
+
+	void closeMenu() 
+	{
+		system("cls");
+		string command;
+		std::cout << "Intorduceti comanda: ";
+		while (getline(cin, command)) //sa nu uit sa modific cu std::cin la final
+		{
+			if (command == "exit" || command == "quit")
+			{
+				break;
+			}
+
+			try
+			{
+				std::cout << "\n\n" << command << "\n";
+				InterpretCommand(command, this->db);
+			}
+			catch (exception exc)
+			{
+				std::cout << exc.what();
+			}
+			std::cout << "\nIntorduceti comanda: ";
+		}
+	}
+};
+
 int main(int argc, char* argv[])
 {
 	//TEXT_COLUMN txtC("Nume", COLUMN_TYPES::TEXT, 25, "NULL");
@@ -3395,6 +3746,8 @@ int main(int argc, char* argv[])
 
 	DATABASE db(1, "ProjectDB");
 	db.loadDb();
+	Menu menu(db);
+
 	std::cout << "argc: " << argc << endl;
 	for (int i = 0; i < argc; i++)
 	{
@@ -3402,26 +3755,7 @@ int main(int argc, char* argv[])
 	}
 	if (argc == 1)
 	{
-		string command;
-		std::cout << "Intorduceti comanda: ";
-		while (getline(cin, command)) //sa nu uit sa modific cu std::cin la final
-		{
-			if (command == "exit")
-			{
-				break;
-			}
-
-			try
-			{
-				std::cout << "\n\n" << command << "\n";
-				InterpretCommand(command, db);
-			}
-			catch (exception exc)
-			{
-				std::cout << exc.what();
-			}
-			std::cout << "\nIntorduceti comanda: ";
-		}
+		menu.showMenu();
 	}
 	else if (argc > 1 && argc < 7)
 	{
@@ -3477,6 +3811,12 @@ int main(int argc, char* argv[])
 	//std::cout << db;
 	return 0;
 
+
+	//TODO: MENIU LMAO
+	// meniu cu optiuni predefinite pentru partile importante ale comenzii,
+	// optiune insert manual command
+	// optiune exit
+	
 	//TODO: facut meniu cu citire din consola pentru param unei functii
 	//cu completare a sintaxei automata intr-un stringstream (cred? de vazut)
 }
