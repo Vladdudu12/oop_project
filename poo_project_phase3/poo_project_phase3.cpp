@@ -342,8 +342,7 @@ public:
 #pragma endregion
 
 #pragma region Operators
-	TEXT_COLUMN& operator= (const TEXT_COLUMN& txtCol)
-	{
+	TEXT_COLUMN& operator= (const TEXT_COLUMN& txtCol)	{
 		if (this != &txtCol)
 		{
 			this->columnName = txtCol.columnName;
@@ -1773,7 +1772,7 @@ public:
 		this->textColumns = new TEXT_COLUMN[this->numberOfTextColumns];
 		if (this->numberOfTextColumns > 1)
 		{
-			for (int i = 0; i < this->numberOfTextColumns; i++)
+			for (int i = 0; i < this->numberOfTextColumns - 1; i++)
 			{
 				this->textColumns[i] = copy.textColumns[i];
 			}
@@ -1793,7 +1792,7 @@ public:
 		this->intColumns = new INT_COLUMN[this->numberOfIntColumns];
 		if (this->numberOfIntColumns > 1)
 		{
-			for (int i = 0; i < this->numberOfIntColumns; i++)
+			for (int i = 0; i < this->numberOfIntColumns - 1; i++)
 			{
 				this->intColumns[i] = copy.intColumns[i];
 			}
@@ -1813,7 +1812,7 @@ public:
 		this->floatColumns = new FLOAT_COLUMN[this->numberOfFloatColumns];
 		if (this->numberOfFloatColumns > 1)
 		{
-			for (int i = 0; i < this->numberOfFloatColumns; i++)
+			for (int i = 0; i < this->numberOfFloatColumns - 1; i++)
 			{
 				this->floatColumns[i] = copy.floatColumns[i];
 			}
@@ -1917,7 +1916,7 @@ public:
 	DATABASE(const DATABASE& db) :id(db.id)
 	{
 		this->databaseName = db.databaseName;
-		if (db.numberOfTables < 0)
+		if (db.numberOfTables <= 0)
 		{
 			DATABASE::numberOfTables = 0;
 			this->tables = NULL;
@@ -2026,25 +2025,36 @@ public:
 		configFile.open("db.txt", ios::in);
 		if (configFile.is_open())
 		{
-			string tableName;
-			configFile >> this->databaseName;
-			configFile >> DATABASE::numberOfTables;
-			this->tables = new TABLE[DATABASE::numberOfTables];
-			for (int i = 0; i < DATABASE::numberOfTables; i++)
+			if (configFile.peek() != std::ifstream::traits_type::eof())
 			{
-				configFile >> tableName;
-				string tableFilename = tableName + txtExtension;
-				TABLE t;
-				t.loadTable(tableFilename);
-				tables[i] = t;
-				//load each table into db
+				string tableName;
+				configFile >> this->databaseName;
+				configFile >> DATABASE::numberOfTables;
+				this->tables = new TABLE[DATABASE::numberOfTables];
+				if (DATABASE::numberOfTables > 0)
+				{
+					for (int i = 0; i < DATABASE::numberOfTables; i++)
+					{
+						configFile >> tableName;
+						string tableFilename = tableName + txtExtension;
+						TABLE t;
+						t.loadTable(tableFilename);
+						tables[i] = t;
+						//load each table into db
+					}
+				}
+				cout << "Database loaded!";
+			}
+			else
+			{
+				cout << "Fisierul config este gol!";
 			}
 		}
 		else
 		{
 			//nu am bagat cu exceptie deoarece programul ar trebui sa ruleze
 			//chiar si daca nu exista un fisier in prealabil (cazul: new database)
-			cout << ("Nu exista fisierul config!");
+			cout << "Nu exista fisierul config!";
 		}
 	}
 #pragma endregion
@@ -2080,7 +2090,7 @@ public:
 		DATABASE copy = *this;
 		delete[] this->tables;
 		DATABASE::numberOfTables++;
-		this->tables = new(nothrow) TABLE[DATABASE::numberOfTables];
+		this->tables = new TABLE[DATABASE::numberOfTables];
 		if (DATABASE::numberOfTables > 1)
 		{
 			for (int i = 0; i < DATABASE::numberOfTables - 1; i++)
@@ -3500,7 +3510,7 @@ public:
 	{
 		for (int i = 0; i < values.size(); i++)
 		{
-			this->values[i] = values[i];
+			this->values.push_back(values[i]);
 		}
 	}
 
@@ -3717,7 +3727,7 @@ void displayMenu()
 	cout << " 0.Exit\n";
 }
 
-void createTable(DATABASE db)
+void createTable(DATABASE& db)
 {
 	system("cls");
 
@@ -3792,7 +3802,7 @@ void createTable(DATABASE db)
 	}
 }
 
-void dropTable(DATABASE db)
+void dropTable(DATABASE& db)
 {
 	system("cls");
 
@@ -3830,7 +3840,7 @@ void dropTable(DATABASE db)
 	}
 }
 
-void displayTable(DATABASE db)
+void displayTable(DATABASE& db)
 {
 	system("cls");
 
@@ -3869,7 +3879,7 @@ void displayTable(DATABASE db)
 	}
 }
 
-void insertData(DATABASE db)
+void insertData(DATABASE& db)
 {
 	system("cls");
 
@@ -3882,7 +3892,7 @@ void insertData(DATABASE db)
 	cout << "Inserati Valori: "; cin >> value;
 	values.push_back(value);
 	cout << "Mai adaugati alta valoare? (y/n)";
-	cout << "Alegere: ";
+	cout << "\nAlegere: ";
 	cin >> alegere;
 	while (alegere == "y" || alegere == "Y")
 	{
@@ -3914,7 +3924,7 @@ void insertData(DATABASE db)
 	}
 }
 
-void deleteData(DATABASE db)
+void deleteData(DATABASE& db)
 {
 	system("cls");
 
@@ -3946,7 +3956,7 @@ void deleteData(DATABASE db)
 
 }
 
-void selectData(DATABASE db)
+void selectData(DATABASE& db)
 {
 	system("cls");
 
@@ -4072,7 +4082,7 @@ void selectData(DATABASE db)
 	}
 }
 
-void updateData(DATABASE db)
+void updateData(DATABASE& db)
 {
 	system("cls");
 
@@ -4110,7 +4120,7 @@ void updateData(DATABASE db)
 	}
 }
 
-void importData(DATABASE db)
+void importData(DATABASE& db)
 {
 	system("cls");
 
@@ -4162,10 +4172,12 @@ public:
 			{
 			case 1:
 				createTable(this->db);
+				this->db.saveDb();
 				cout << "\nAlege optiunea: "; cin >> option;
 				break;
 			case 2:
 				dropTable(this->db);
+				this->db.saveDb();
 				cout << "\nAlege optiunea: "; cin >> option;
 				break;
 			case 3:
@@ -4174,6 +4186,7 @@ public:
 				break;
 			case 11:
 				insertData(this->db);
+				this->db.saveDb();
 				cout << "\nAlege optiunea: "; cin >> option;
 				break;
 			case 12:
@@ -4186,10 +4199,12 @@ public:
 				break;
 			case 14:
 				updateData(this->db);
+				this->db.saveDb();
 				cout << "\nAlege optiunea: "; cin >> option;
 				break;
 			case 15:
 				importData(this->db);
+				this->db.saveDb();
 				cout << "\nAlege optiunea: "; cin >> option;
 				break;
 			case 20:
@@ -4246,6 +4261,8 @@ int main(int argc, char* argv[])
 	db.loadDb();
 	Menu menu(db);
 
+	cout << "\nApasati orice tasta pentru a continua...";
+	_getch();
 	//std::cout << "argc: " << argc << endl;
 	//for (int i = 0; i < argc; i++)
 	//{
@@ -4294,6 +4311,7 @@ int main(int argc, char* argv[])
 						{
 							cout << "\n" << command << "\n";
 							InterpretCommand(command, db);
+							db.saveDb();
 						}
 						catch (exception err)
 						{
@@ -4322,9 +4340,8 @@ int main(int argc, char* argv[])
 	{
 		cout << "\n!!!Aveti voie MAXIM 5 fisiere\n";
 	}
+	
 
-
-	db.saveDb();
 	//std::cout << "\n\n#########################################\n\n";
 	//std::cout << db;
 	return 0;
