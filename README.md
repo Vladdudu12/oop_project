@@ -1,14 +1,11 @@
 # oop_project
 
-BUG LIST
+IMPROVEMENT LIST
 
-SELECT:
+-Lista cu tabelele cand vrei sa dai select sau display
 
--la select imi formeaza bine comanda, dar imi parseaza gresit
--la select cand afiseaza coloana, imi apeleaza de doua ori 
--la select cand afiseaza mai multe coloane, imi formeaza de doua ori lista de coloane cu doua virgule intre ele
+-Lista cu tipurile de data atunci cand vrei sa faci o tabela noua
 
-UPDATE:
+-Refacut clasele pentru coloane cu Template
 
--Vector subscript out of range
-
+-Map cu tipurile de date la afisare

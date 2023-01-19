@@ -1,0 +1,29 @@
+
+
+----------------------
+Nume Tabela: Muncitori
+----------------------
+
+Lista Coloane text: 
+
+Coloana Text 0:
+Numele Coloanei: Nume
+Tipul Coloanei: 1
+Dimensiunea Coloanei: 20
+Valoarea Implicita: Dumitrescu
+Valori: 
+values[0]: Ionescu
+Coloana Text 1:
+Numele Coloanei: Prenume
+Tipul Coloanei: 1
+Dimensiunea Coloanei: 20
+Valoarea Implicita: Vlad
+Valori: 
+values[0]: Mihai
+----------------------
+
+Lista Coloane int: 
+
+----------------------
+
+Lista Coloane float: 

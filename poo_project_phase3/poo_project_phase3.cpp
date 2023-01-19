@@ -2685,10 +2685,10 @@ void InterpretCommand(string command, DATABASE& db)
 		string tableName;
 		commandWords = stringTokenizer(command, ' ');
 
-		for (int i = 0; i < commandWords.size(); i++)
-		{
-			std::cout << "\n[" << i << "]: " << commandWords[i];
-		}
+		//for (int i = 0; i < commandWords.size(); i++)
+		//{
+		//	std::cout << "\n[" << i << "]: " << commandWords[i];
+		//}
 
 		tableName = commandWords[3];
 		string filename = tableName + to_string(time(nullptr)) + txtExtension;
@@ -2806,12 +2806,11 @@ void InterpretCommand(string command, DATABASE& db)
 			//impartim coloanele
 			columnData = stringTokenizer(command, '(');
 
-			cout << "\n!!!!!!!!!!!!! AJUNGE AICI\n";
 			columnAttributes = stringTokenizer(stringTokenizer(columnData[1], ')')[0], ',');
-			for (int i = 0; i < columnAttributes.size(); i++)
-			{
-				std::cout << columnAttributes[i] << endl;
-			}
+			//for (int i = 0; i < columnAttributes.size(); i++)
+			//{
+			//	std::cout << columnAttributes[i] << endl;
+			//}
 
 			if (t.checkColumns(columnAttributes))
 			{
@@ -3053,7 +3052,7 @@ void InterpretCommand(string command, DATABASE& db)
 								break;
 							}
 
-							std::cout << "\nA fost afisata inregistrarea cautata!";
+							std::cout << "\nA fost updatata inregistrarea cautata!";
 						}
 						catch (exception exc)
 						{
@@ -3129,7 +3128,7 @@ void InterpretCommand(string command, DATABASE& db)
 								throw exception("ERROR! Nu a fost gasita coloana");
 								break;
 							}
-							std::cout << "\nA fost afisata inregistrarea cautata!";
+							std::cout << "\nA fost updatata inregistrarea cautata!";
 						}
 						catch (exception exc)
 						{
@@ -3205,7 +3204,7 @@ void InterpretCommand(string command, DATABASE& db)
 								throw exception("ERROR! Nu a fost gasita coloana");
 								break;
 							}
-							std::cout << "\nA fost afisata inregistrarea cautata!";
+							std::cout << "\nA fost updatata inregistrarea cautata!";
 						}
 						catch (exception exc)
 						{
@@ -3278,10 +3277,10 @@ void InterpretCommand(string command, DATABASE& db)
 						if (columnValues.size() > 1)
 						{
 							//insert values
-							for (int i = 0; i < columnValues.size(); i++)
-							{
-								std::cout << "\n" << columnValues[i];
-							}
+							//for (int i = 0; i < columnValues.size(); i++)
+							//{
+							//	std::cout << "\n" << columnValues[i];
+							//}
 
 							int textColumnCounter = 0;
 							int intColumnCounter = 0;
@@ -3546,7 +3545,7 @@ public:
 
 	string buildCommand()
 	{
-		this->command = "DELETE FROM " + this->tableName + " WHERE " + this->columnName + "=" + this->value;
+		this->command = "DELETE FROM " + this->tableName + " WHERE " + this->columnName + " = " + this->value;
 		return this->command;
 	}
 };
@@ -3591,7 +3590,7 @@ public:
 
 	string buildCommand()
 	{
-		this->command += "SELECT " + this->finder + " FROM " + this->tableName;
+		this->command = "SELECT " + this->finder + " FROM " + this->tableName;
 		if (this->conditionExists == true)
 		{
 			this->command += " WHERE " + this->columnName + "=" + this->value;
@@ -3636,9 +3635,10 @@ public:
 
 	string buildCommand()
 	{
+		this->finder.clear();
 		for (int i = 0; i < this->numberOfColumns; i++)
 		{
-			this->finder += this->columns[i] + ",";
+			this->finder += this->columns[i]; //de scos virgula de aici
 
 			if(i < this->numberOfColumns - 1)
 			{
@@ -3675,7 +3675,7 @@ public:
 
 	string buildCommand()
 	{
-		this->command = "UPDATE " + this->tableName + " SET " + this->setColumnName + "=" + this->setValue + " WHERE " + this->checkColumnName + "=" + this->checkValue;
+		this->command = "UPDATE " + this->tableName + " SET " + this->setColumnName + " = " + this->setValue + " WHERE " + this->checkColumnName + " = " + this->checkValue;
 		return this->command;
 	}
 };
@@ -3891,15 +3891,15 @@ void insertData(DATABASE& db)
 	cout << "Nume Tabela: "; cin >> tableName;
 	cout << "Inserati Valori: "; cin >> value;
 	values.push_back(value);
-	cout << "Mai adaugati alta valoare? (y/n)";
-	cout << "\nAlegere: ";
+	cout << "Mai adaugati alta valoare? (y/n)\n";
+	cout << "Alegere: ";
 	cin >> alegere;
 	while (alegere == "y" || alegere == "Y")
 	{
 		cout << "Inserati Valori: "; cin >> value;
 		values.push_back(value);
-		cout << "Mai adaugati alta valoare? (y/n)";
-		cout << "\nAlegere: ";
+		cout << "Mai adaugati alta valoare? (y/n)\n";
+		cout << "Alegere: ";
 		cin >> alegere;
 	}
 
@@ -3934,8 +3934,8 @@ void deleteData(DATABASE& db)
 	string alegere;
 
 	cout << "Nume Tabela: "; cin >> tableName;
-	cout << "Ce coloana sa verificam?"; cin >> columnName;
-	cout << "Cu ce valoare sa verificam coloana aleasa?"; cin >> value;
+	cout << "Ce coloana sa verificam?: "; cin >> columnName;
+	cout << "Cu ce valoare sa verificam coloana aleasa?: "; cin >> value;
 	
 	DeleteBuilder del(tableName, columnName, value);
 
@@ -3974,8 +3974,8 @@ void selectData(DATABASE& db)
 		if (alegere == "y" || alegere == "Y")
 		{
 			conditie = true;
-			cout << "Ce coloana sa verificam?"; cin >> columnName;
-			cout << "Cu ce valoare sa verificam coloana aleasa?"; cin >> value;
+			cout << "Ce coloana sa verificam?: "; cin >> columnName;
+			cout << "Cu ce valoare sa verificam coloana aleasa?: "; cin >> value;
 			try
 			{
 				SelectAllBuilder selectAll(tableName, conditie, columnName, value);
@@ -4022,22 +4022,22 @@ void selectData(DATABASE& db)
 	{
 		vector<string> columns;
 		string column;
-		cout << "Ce coloana sa afisam? "; cin >> column;
+		cout << "Ce coloana sa afisam?: "; cin >> column;
 		columns.push_back(column);
-		cout << "Mai afisam alta coloana? (y/n)"; cin >> alegere;
-		while (alegere != "n" || alegere == "N")
+		cout << "Mai afisam alta coloana? (y/n): "; cin >> alegere;
+		while (alegere == "y" || alegere == "Y")
 		{
-			cout << "Ce coloana sa afisam? "; cin >> column;
+			cout << "Ce coloana sa afisam?: "; cin >> column;
 			columns.push_back(column);
-			cout << "Mai afisam alta coloana? (y/n)"; cin >> alegere;
+			cout << "Mai afisam alta coloana? (y/n): "; cin >> alegere;
 		}
 
 		cout << "Verificam si o conditie? (y/n): "; cin >> alegere;
 		if (alegere == "y" || alegere == "Y")
 		{
 			conditie = true;
-			cout << "Ce coloana sa verificam?"; cin >> columnName;
-			cout << "Cu ce valoare sa verificam coloana aleasa?"; cin >> value;
+			cout << "Ce coloana sa verificam?: "; cin >> columnName;
+			cout << "Cu ce valoare sa verificam coloana aleasa?: "; cin >> value;
 			try
 			{
 				SelectColumnsBuilder selectColumns(tableName, conditie, columns.size(), columns, columnName, value);
@@ -4095,10 +4095,10 @@ void updateData(DATABASE& db)
 	string checkValue;
 
 	cout << "Nume Tabela: "; cin >> tableName;
-	cout << "Din ce coloana modificam?:"; cin >> setColumnName;
-	cout << "Valoarea pe care o vom modifica:"; cin >> setValue;
-	cout << "Numele coloanei asupra careia ii aplicam o conditie:"; cin >> checkColumnName;
-	cout << "Valoarea pe care o verificam:"; cin >> checkValue;
+	cout << "Din ce coloana modificam?: "; cin >> setColumnName;
+	cout << "Valoarea pe care o vom modifica: "; cin >> setValue;
+	cout << "Numele coloanei asupra careia ii aplicam o conditie: "; cin >> checkColumnName;
+	cout << "Valoarea pe care o verificam: "; cin >> checkValue;
 
 	try
 	{
@@ -4128,7 +4128,7 @@ void importData(DATABASE& db)
 	string filename;
 
 	cout << "Nume Tabela: "; cin >> tableName;
-	cout << "Numele fisierului.csv din care sa inseram date"; cin >> filename;
+	cout << "Numele fisierului.csv din care sa inseram date: "; cin >> filename;
 	try
 	{
 		ImportBuilder import(tableName, filename);

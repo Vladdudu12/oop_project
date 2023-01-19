@@ -1,0 +1,15 @@
+
+
+----------------------
+Nume Tabela: Unknown
+----------------------
+
+Lista Coloane text: 
+
+----------------------
+
+Lista Coloane int: 
+
+----------------------
+
+Lista Coloane float: 

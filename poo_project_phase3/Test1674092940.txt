@@ -1,0 +1,30 @@
+
+
+----------------------
+Nume Tabela: Test
+----------------------
+
+Lista Coloane text: 
+
+----------------------
+
+Lista Coloane int: 
+
+Coloana int 0:
+Numele Coloanei: Id
+Tipul Coloanei: 2
+Dimensiunea Coloanei: 25
+Valoarea Implicita: 5
+Valori: 
+values[0]: 1
+----------------------
+
+Lista Coloane float: 
+
+Coloana float 0:
+Numele Coloanei: Salariu
+Tipul Coloanei: 2
+Dimensiunea Coloanei: 20
+Valoarea Implicita: 20.5
+Valori: 
+values[0]: 13.5

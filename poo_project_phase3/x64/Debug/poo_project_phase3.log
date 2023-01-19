@@ -17,11 +17,11 @@ C:\Users\Vlad\Desktop\GitHub Repos\oop_project\poo_project_phase3\poo_project_ph
 C:\Users\Vlad\Desktop\GitHub Repos\oop_project\poo_project_phase3\poo_project_phase3.cpp(2544,12): warning C4834: discarding return value of function with 'nodiscard' attribute
 C:\Users\Vlad\Desktop\GitHub Repos\oop_project\poo_project_phase3\poo_project_phase3.cpp(2598,40): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
 C:\Users\Vlad\Desktop\GitHub Repos\oop_project\poo_project_phase3\poo_project_phase3.cpp(2716,42): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Vlad\Desktop\GitHub Repos\oop_project\poo_project_phase3\poo_project_phase3.cpp(2825,42): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Vlad\Desktop\GitHub Repos\oop_project\poo_project_phase3\poo_project_phase3.cpp(2972,42): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Vlad\Desktop\GitHub Repos\oop_project\poo_project_phase3\poo_project_phase3.cpp(3316,53): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Vlad\Desktop\GitHub Repos\oop_project\poo_project_phase3\poo_project_phase3.cpp(3321,16): warning C4834: discarding return value of function with 'nodiscard' attribute
-C:\Users\Vlad\Desktop\GitHub Repos\oop_project\poo_project_phase3\poo_project_phase3.cpp(3343,16): warning C4834: discarding return value of function with 'nodiscard' attribute
+C:\Users\Vlad\Desktop\GitHub Repos\oop_project\poo_project_phase3\poo_project_phase3.cpp(2824,42): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Vlad\Desktop\GitHub Repos\oop_project\poo_project_phase3\poo_project_phase3.cpp(2971,42): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Vlad\Desktop\GitHub Repos\oop_project\poo_project_phase3\poo_project_phase3.cpp(3315,53): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Vlad\Desktop\GitHub Repos\oop_project\poo_project_phase3\poo_project_phase3.cpp(3320,16): warning C4834: discarding return value of function with 'nodiscard' attribute
+C:\Users\Vlad\Desktop\GitHub Repos\oop_project\poo_project_phase3\poo_project_phase3.cpp(3342,16): warning C4834: discarding return value of function with 'nodiscard' attribute
 C:\Users\Vlad\Desktop\GitHub Repos\oop_project\poo_project_phase3\poo_project_phase3.cpp(3788,117): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
 C:\Users\Vlad\Desktop\GitHub Repos\oop_project\poo_project_phase3\poo_project_phase3.cpp(4043,103): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
 C:\Users\Vlad\Desktop\GitHub Repos\oop_project\poo_project_phase3\poo_project_phase3.cpp(4065,84): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
