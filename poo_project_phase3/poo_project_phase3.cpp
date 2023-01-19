@@ -1,11 +1,12 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
-#include <string>
-#include <vector>
 #include <cstdio>
 #include <ctime>
 #include <conio.h>
+#include <string>
+#include <vector>
+#include<map>
 
 using namespace std;
 
@@ -14,7 +15,7 @@ using namespace std;
 #define csvExtension ".csv";
 #define binExtension ".bin";
 
-ifstream f("command.in");
+//ifstream f("command.in");
 //am facut citire din fisier pentru a testa mai multe functii rapid
 //Nu mai suportam sa scriu a 20-a oara CREATE TABLE
 
@@ -39,6 +40,10 @@ enum COLUMN_TYPES
 	TEXT = 1, INTEGER = 2, FLOAT = 3,
 	UNKNOWN = -1
 };
+
+
+map<int, string> columnTypes;
+
 
 class TEXT_COLUMN;
 class INT_COLUMN;
@@ -145,8 +150,12 @@ public:
 #pragma region Friend Methods
 	friend ostream& operator<<(ostream& out, const COLUMN& col)
 	{
+		columnTypes.insert(pair<int, string>(1, "TEXT"));
+		columnTypes.insert(pair<int, string>(2, "INTEGER"));
+		columnTypes.insert(pair<int, string>(3, "FLOAT"));
+
 		out << "\nNume coloana: " << col.columnName;
-		out << "\nTip coloana: " << col.columnType; //facut cu map ca sa apara tipul literal
+		out << "\nTip coloana: " << columnTypes.at(col.columnType); //facut cu map ca sa apara tipul literal
 		out << "\nDimensiune coloana: " << col.columnSize;
 
 		return out;
@@ -219,19 +228,27 @@ public:
 #pragma region Methods
 	void showEntryAtIndex(int index)
 	{
+		columnTypes.insert(pair<int, string>(1, "TEXT"));
+		columnTypes.insert(pair<int, string>(2, "INTEGER"));
+		columnTypes.insert(pair<int, string>(3, "FLOAT"));
+
 		std::cout << "\n-------------------\n";
 		std::cout << "\nNumele Coloanei: " << this->columnName;
-		std::cout << "\nTipul Coloanei: " << this->columnType;
+		std::cout << "\nTipul Coloanei: " << columnTypes.at(this->columnType);
 		std::cout << "\nDimensiunea Coloanei: " << this->columnSize;
 		std::cout << "\nValoarea Implicita: " << this->defaultValue;
 		std::cout << "\nValoare: " << this->values[index];
 	}
 	void generateReportEntryAtIndex(int index, string filename)
 	{
+		columnTypes.insert(pair<int, string>(1, "TEXT"));
+		columnTypes.insert(pair<int, string>(2, "INTEGER"));
+		columnTypes.insert(pair<int, string>(3, "FLOAT"));
+
 		ofstream file(filename, ios::out | ios::app);
 		file << "\n-------------------\n";
 		file << "\nNumele Coloanei: " << this->columnName;
-		file << "\nTipul Coloanei: " << this->columnType;
+		file << "\nTipul Coloanei: " << columnTypes.at(this->columnType);
 		file << "\nDimensiunea Coloanei: " << this->columnSize;
 		file << "\nValoarea Implicita: " << this->defaultValue;
 		file << "\nValoare: " << this->values[index];
@@ -239,11 +256,15 @@ public:
 
 	void saveTextColumn(string filename)
 	{
+		columnTypes.insert(pair<int, string>(1, "TEXT"));
+		columnTypes.insert(pair<int, string>(2, "INTEGER"));
+		columnTypes.insert(pair<int, string>(3, "FLOAT"));
+
 		ofstream file(filename, ios::app);
 		if (file.is_open())
 		{
 			file << this->columnName << "\n";
-			file << this->columnType << "\n";
+			file << columnTypes.at(this->columnType) << "\n";
 			file << this->columnSize << "\n";
 			file << this->defaultValue << "\n";
 			file << this->numberOfValues << "\n";
@@ -526,8 +547,12 @@ public:
 #pragma region Friend Methods
 	friend ostream& operator<<(ostream& out, const TEXT_COLUMN& txtCol)
 	{
+		columnTypes.insert(pair<int, string>(1, "TEXT"));
+		columnTypes.insert(pair<int, string>(2, "INTEGER"));
+		columnTypes.insert(pair<int, string>(3, "FLOAT"));
+
 		out << "\nNumele Coloanei: " << txtCol.columnName;
-		out << "\nTipul Coloanei: " << txtCol.columnType;
+		out << "\nTipul Coloanei: " << columnTypes.at(txtCol.columnType);
 		out << "\nDimensiunea Coloanei: " << txtCol.columnSize;
 		out << "\nValoarea Implicita: " << txtCol.defaultValue;
 		out << "\nValori: ";
@@ -604,9 +629,13 @@ public:
 #pragma region Methods
 	void showEntryAtIndex(int index)
 	{
+		columnTypes.insert(pair<int, string>(1, "TEXT"));
+		columnTypes.insert(pair<int, string>(2, "INTEGER"));
+		columnTypes.insert(pair<int, string>(3, "FLOAT"));
+
 		std::cout << "\n-------------------\n";
 		std::cout << "\nNumele Coloanei: " << this->columnName;
-		std::cout << "\nTipul Coloanei: " << this->columnType;
+		std::cout << "\nTipul Coloanei: " << columnTypes.at(this->columnType);
 		std::cout << "\nDimensiunea Coloanei: " << this->columnSize;
 		std::cout << "\nValoarea Implicita: " << this->defaultValue;
 		std::cout << "\nValoare: " << this->values[index];
@@ -614,10 +643,14 @@ public:
 
 	void generateReportEntryAtIndex(int index, string filename)
 	{
+		columnTypes.insert(pair<int, string>(1, "TEXT"));
+		columnTypes.insert(pair<int, string>(2, "INTEGER"));
+		columnTypes.insert(pair<int, string>(3, "FLOAT"));
+
 		ofstream file(filename, ios::out | ios::app);
 		file << "\n-------------------\n";
 		file << "\nNumele Coloanei: " << this->columnName;
-		file << "\nTipul Coloanei: " << this->columnType;
+		file << "\nTipul Coloanei: " << columnTypes.at(this->columnType);
 		file << "\nDimensiunea Coloanei: " << this->columnSize;
 		file << "\nValoarea Implicita: " << this->defaultValue;
 		file << "\nValoare: " << this->values[index];
@@ -626,11 +659,14 @@ public:
 
 	void saveIntColumn(string filename)
 	{
+		columnTypes.insert(pair<int, string>(1, "TEXT"));
+		columnTypes.insert(pair<int, string>(2, "INTEGER"));
+		columnTypes.insert(pair<int, string>(3, "FLOAT"));
 		ofstream file(filename, ios::app);
 		if (file.is_open())
 		{
 			file << this->columnName << "\n";
-			file << this->columnType << "\n";
+			file << columnTypes.at(this->columnType) << "\n";
 			file << this->columnSize << "\n";
 			file << this->defaultValue << "\n";
 			file << this->numberOfValues << "\n";
@@ -840,8 +876,12 @@ public:
 #pragma region Friend Methods
 	friend ostream& operator<<(ostream& out, const INT_COLUMN& intCol)
 	{
+		columnTypes.insert(pair<int, string>(1, "TEXT"));
+		columnTypes.insert(pair<int, string>(2, "INTEGER"));
+		columnTypes.insert(pair<int, string>(3, "FLOAT"));
+
 		out << "\nNumele Coloanei: " << intCol.columnName;
-		out << "\nTipul Coloanei: " << intCol.columnType;
+		out << "\nTipul Coloanei: " << columnTypes.at(intCol.columnType);
 		out << "\nDimensiunea Coloanei: " << intCol.columnSize;
 		out << "\nValoarea Implicita: " << intCol.defaultValue;
 		out << "\nValori: ";
@@ -917,9 +957,13 @@ public:
 #pragma region Methods
 	void showEntryAtIndex(int index)
 	{
+		columnTypes.insert(pair<int, string>(1, "TEXT"));
+		columnTypes.insert(pair<int, string>(2, "INTEGER"));
+		columnTypes.insert(pair<int, string>(3, "FLOAT"));
+
 		std::cout << "\n-------------------\n";
 		std::cout << "\nNumele Coloanei: " << this->columnName;
-		std::cout << "\nTipul Coloanei: " << this->columnType;
+		std::cout << "\nTipul Coloanei: " << columnTypes.at(this->columnType);
 		std::cout << "\nDimensiunea Coloanei: " << this->columnSize;
 		std::cout << "\nValoarea Implicita: " << this->defaultValue;
 		std::cout << "\nValoare: " << this->values[index];
@@ -927,10 +971,13 @@ public:
 
 	void generateReportEntryAtIndex(int index, string filename)
 	{
+		columnTypes.insert(pair<int, string>(1, "TEXT"));
+		columnTypes.insert(pair<int, string>(2, "INTEGER"));
+		columnTypes.insert(pair<int, string>(3, "FLOAT"));
 		ofstream file(filename, ios::out | ios::app);
 		file << "\n-------------------\n";
 		file << "\nNumele Coloanei: " << this->columnName;
-		file << "\nTipul Coloanei: " << this->columnType;
+		file << "\nTipul Coloanei: " << columnTypes.at(this->columnType);
 		file << "\nDimensiunea Coloanei: " << this->columnSize;
 		file << "\nValoarea Implicita: " << this->defaultValue;
 		file << "\nValoare: " << this->values[index];
@@ -938,11 +985,14 @@ public:
 
 	void saveFloatColumn(string filename)
 	{
+		columnTypes.insert(pair<int, string>(1, "TEXT"));
+		columnTypes.insert(pair<int, string>(2, "INTEGER"));
+		columnTypes.insert(pair<int, string>(3, "FLOAT"));
 		ofstream file(filename, ios::app);
 		if (file.is_open())
 		{
 			file << this->columnName << "\n";
-			file << this->columnType << "\n";
+			file << columnTypes.at(this->columnType) << "\n";
 			file << this->columnSize << "\n";
 			file << this->defaultValue << "\n";
 			file << this->numberOfValues << "\n";
@@ -1144,8 +1194,12 @@ public:
 #pragma region Friend Methods
 	friend ostream& operator<<(ostream& out, const FLOAT_COLUMN& floatCol)
 	{
+		columnTypes.insert(pair<int, string>(1, "TEXT"));
+		columnTypes.insert(pair<int, string>(2, "INTEGER"));
+		columnTypes.insert(pair<int, string>(3, "FLOAT"));
+
 		out << "\nNumele Coloanei: " << floatCol.columnName;
-		out << "\nTipul Coloanei: " << floatCol.columnType;
+		out << "\nTipul Coloanei: " << columnTypes.at(floatCol.columnType);
 		out << "\nDimensiunea Coloanei: " << floatCol.columnSize;
 		out << "\nValoarea Implicita: " << floatCol.defaultValue;
 		out << "\nValori: ";
