@@ -1,4 +1,6 @@
 # oop_project
+NEED TO BUGFIX
+-Citire Binara din fisier Config
 
 IMPROVEMENT LIST
 
